@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Calendario de ventas - JH MAKER POS</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{font-family:Arial;background:#0f172a;color:white;padding:20px}
+.card{background:#1e293b;padding:20px;border-radius:15px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:15px}
+.dia{
+height:55px;
+border:1px solid #475569;
+border-radius:8px;
+cursor:pointer;
+background:#334155;
+color:white;
+font-size:16px;
+font-weight:bold;
+}
+.dia:hover{
+background:#2563eb;
+}
+.dia.activo{
+background:#22c55e;
+font-weight:bold;
+}
+.cab{text-align:center;margin-bottom:15px}
+.detalle{margin-top:20px;background:#1e293b;padding:20px;border-radius:15px}
+.nav{display:flex;justify-content:space-between;align-items:center}
+button{padding:8px}
+
+/* Ajuste boton carrito solo movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    width:auto !important;
+    min-width:48px !important;
+    height:40px !important;
+    padding:6px 10px !important;
+    border-radius:12px !important;
+    font-size:18px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    z-index:900 !important;
+}
+
+/* contador compacto */
+#toggleCarritoBtn .cart-count,
+.cart-count,
+#cartCount,
+.contador-carrito{
+    font-size:11px !important;
+    min-width:16px !important;
+    height:16px !important;
+    line-height:16px !important;
+    border-radius:8px !important;
+    padding:0 3px !important;
+}
+
+/* cuando el carrito esta abierto no debe tapar el panel */
+.carrito.abierto ~ #toggleCarritoBtn,
+body:has(.carrito.abierto) #toggleCarritoBtn{
+    opacity:0.7;
+}
+
+}
+
+
+/* Boton carrito siempre accesible cuando el panel esta abierto */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:16px !important;
+    bottom:75px !important;
+    z-index:9999 !important;
+}
+
+.carrito{
+    z-index:5000 !important;
+}
+
+/* mantener el boton por encima del panel */
+body.carrito-abierto #toggleCarritoBtn{
+    display:flex !important;
+    opacity:1 !important;
+}
+
+}
+
+
+/* Carrito movil: panel por encima del boton sin transparencia */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    z-index:1000 !important;
+}
+
+/* Panel del carrito tapa el boton cuando esta abierto */
+.carrito.abierto,
+.carrito.active,
+.carrito{
+    z-index:9999 !important;
+}
+
+/* Sin cambios de opacidad */
+body.carrito-abierto #toggleCarritoBtn{
+    opacity:1 !important;
+}
+
+}
+
+
+/* Reubicacion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    top:18px !important;
+    right:14px !important;
+    bottom:auto !important;
+    z-index:3000 !important;
+}
+
+/* Mantener el carrito desplegado encima sin tapar el boton */
+.carrito,
+.carrito.abierto,
+.carrito.active{
+    z-index:9000 !important;
+}
+
+}
+
+
+/* Posicion final boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:12px !important;
+    bottom:90px !important;
+    top:auto !important;
+    z-index:3000 !important;
+}
+
+}
+
+
+/* Ajuste adicional posicion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:55px !important;
+}
+
+}
+
+
+/* Boton carrito mas abajo en movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:20px !important;
+}
+
+}
+
+</style>
+</head>
+<body>
+<h1>📅 Calendario de ventas</h1>
+<div class="card">
+<div class="nav">
+<button onclick="cambiarMes(-1)">◀</button>
+<h2 id="titulo"></h2>
+<select id="selectorMes" onchange="irMesSeleccionado()" style="padding:8px;border-radius:8px;background:#334155;color:white"></select>
+<button onclick="cambiarMes(1)">▶</button>
+</div>
+<div class="cal" id="calendario"></div>
+</div>
+<div class="detalle" id="detalle">Seleccione una fecha</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig={
+apiKey:"AIzaSyDYjGgEc599if7hQ7GQd2wF7-vlSynBDNU",
+authDomain:"jhmaker-6b092.firebaseapp.com",
+projectId:"jhmaker-6b092",
+storageBucket:"jhmaker-6b092.firebasestorage.app",
+messagingSenderId:"231063273884",
+appId:"1:231063273884:web:e163c609fbdefe46ff8859"
+};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+
+let ventas=[];
+let fecha=new Date();
+
+async function cargarVentas(){
+ const snap=await db.collection("boletas").get();
+ ventas=[];
+ snap.forEach(d=>{
+   const v=d.data();
+   ventas.push(v);
+ });
+ crearCalendario();
+}
+
+function cambiarMes(n){
+ fecha.setMonth(fecha.getMonth()+n);
+ crearCalendario();
+}
+
+function diaFecha(d){
+ try{
+  let f = d && typeof d.toDate === "function" ? d.toDate() : new Date(d);
+  let y=f.getFullYear();
+  let m=String(f.getMonth()+1).padStart(2,"0");
+  let day=String(f.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+ }catch(e){
+  return "";
+ }
+}
+
+
+function cargarSelectorMes(){
+ let s=document.getElementById("selectorMes");
+ if(!s) return;
+ s.innerHTML="";
+ let y=fecha.getFullYear();
+ for(let i=0;i<12;i++){
+   let op=document.createElement("option");
+   op.value=i;
+   op.textContent=new Date(y,i,1).toLocaleString("es",{month:"long"})+" "+y;
+   if(i===fecha.getMonth()) op.selected=true;
+   s.appendChild(op);
+ }
+}
+
+function irMesSeleccionado(){
+ let s=document.getElementById("selectorMes");
+ if(s){
+   fecha.setMonth(parseInt(s.value));
+   crearCalendario();
+ }
+}
+
+function crearCalendario(){
+ let c=document.getElementById("calendario");
+ c.innerHTML="";
+ let y=fecha.getFullYear(), m=fecha.getMonth();
+ cargarSelectorMes();
+ document.getElementById("titulo").innerHTML=fecha.toLocaleString("es",{month:"long",year:"numeric"});
+ let primero=new Date(y,m,1).getDay();
+ primero=primero===0?6:primero-1;
+ let dias=new Date(y,m+1,0).getDate();
+
+ for(let i=0;i<primero;i++){
+  c.appendChild(document.createElement("div"));
+ }
+
+ for(let i=1;i<=dias;i++){
+  let f=`${y}-${String(m+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
+  let b=document.createElement("button");
+  b.className="dia";
+  if(ventas.some(v=>diaFecha(v.fecha?.toDate?v.fecha.toDate():v.fecha)==f)) b.classList.add("activo");
+  b.textContent=i;
+  b.onclick=()=>mostrarDia(f);
+  c.appendChild(b);
+ }
+}
+
+function mostrarDia(f){
+ let lista=ventas.filter(v=>diaFecha(v.fecha?.toDate?v.fecha.toDate():v.fecha)==f);
+ let total=lista.reduce((a,b)=>a+Number(b.total||0),0);
+ document.getElementById("detalle").innerHTML=
+ `<h2>📅 ${f}</h2>
+ <b>Ventas: ${lista.length}</b><br>
+ <b>Total vendido: S/ ${total.toFixed(2)}</b><hr>`+
+ lista.map(v=>`
+ <div>
+ 🧾 ${v.numero||""}<br>
+ ⏰ ${new Date(v.timestamp).toLocaleTimeString()}<br>
+ ${(v.productos||[]).map(p=>(p.n||p.nombre)+" x"+p.cantidad).join("<br>")}
+ <br><b>Total: S/ ${Number(v.total).toFixed(2)}</b>
+ </div><hr>`).join("");
+}
+cargarVentas();
+</script>
+</body>
+</html>

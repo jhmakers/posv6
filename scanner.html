@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Escáner</title>
+
+<script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDYjGgEc599if7hQG7Qd2wF7-vlSynBDNU",
+  authDomain: "jhmaker-6b092.firebaseapp.com",
+  projectId: "jhmaker-6b092",
+  storageBucket: "jhmaker-6b092.firebasestorage.app",
+  messagingSenderId: "231063273884",
+  appId: "1:231063273884:web:e163c609fbdefe46ff8859",
+  measurementId: "G-P99XHR6VVN"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+</script>
+
+<style>
+*{ box-sizing:border-box; }
+body{
+  font-family: Arial, sans-serif;
+  background:#0f172a;
+  color:#fff;
+  text-align:center;
+  margin:0;
+  padding:20px 14px 40px;
+}
+
+video{
+  width:100%;
+  max-width:400px;
+  border-radius:10px;
+}
+
+button{
+  padding:10px 14px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+#scanner{
+  width:100%;
+  max-width:500px;
+  height:380px;
+  margin:auto;
+  border:2px solid #22c55e;
+  border-radius:10px;
+  overflow:hidden;
+  position:relative;
+  background:#020617;
+}
+
+#scanner video{
+  width:100% !important;
+  height:100% !important;
+  object-fit: cover;
+}
+
+.botones-principales{
+  margin-top:12px;
+}
+
+.carrito-box{
+  width:100%;
+  max-width:700px;
+  margin:20px auto 0;
+  background:#111827;
+  border:1px solid #334155;
+  border-radius:14px;
+  padding:14px;
+  text-align:left;
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+
+#lista{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+
+.item-carrito{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px 10px;
+  border-bottom:1px solid #243041;
+}
+
+.item-carrito:last-child{
+  border-bottom:none;
+}
+
+.item-info{
+  flex:1;
+  min-width:0;
+}
+
+.item-nombre{
+  font-weight:700;
+  margin-bottom:4px;
+  word-break:break-word;
+}
+
+.item-detalles{
+  font-size:14px;
+  color:#cbd5e1;
+  line-height:1.5;
+}
+
+.item-acciones{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.btn-desc-icon{
+  background:transparent !important;
+  border:none !important;
+  padding:2px;
+  min-width:30px;
+  height:30px;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:none !important;
+}
+
+.btn-desc-icon:hover{
+  transform:scale(1.15);
+  background:transparent !important;
+}
+
+.btn-cantidad,
+.btn-eliminar{
+  min-width:36px;
+  height:36px;
+  padding:0 10px;
+  font-size:18px;
+  font-weight:bold;
+}
+
+.btn-cantidad{
+  background:#1e293b;
+  color:#fff;
+}
+
+.btn-eliminar{
+  background:#ef4444;
+  color:#fff;
+  font-size:14px;
+}
+
+.cantidad-badge{
+  min-width:42px;
+  text-align:center;
+  font-weight:700;
+}
+
+.item-subtotal{
+  font-size:14px;
+  color:#86efac;
+  font-weight:700;
+}
+
+.resumen{
+  margin-top:16px;
+  padding-top:12px;
+  border-top:1px solid #334155;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.resumen-linea{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  font-size:15px;
+}
+
+.resumen-total{
+  font-size:22px;
+  font-weight:800;
+  color:#22c55e;
+}
+
+.vacio{
+  color:#94a3b8;
+  text-align:center;
+  padding:18px 0;
+}
+
+.notificacion{
+  padding:10px;
+  margin:10px auto;
+  border-radius:8px;
+  max-width:700px;
+}
+
+.ok{ background:#22c55e; }
+.error{ background:#ef4444; }
+
+@media (max-width: 640px){
+  .item-carrito{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .item-acciones{
+    width:100%;
+    justify-content:flex-start;
+  }
+}
+
+
+
+.laser{
+  position:absolute;
+  left:0;
+  width:100%;
+  height:2px;
+  background: linear-gradient(90deg, transparent, red, transparent);
+  box-shadow: 0 0 8px red, 0 0 20px red;
+  animation: scan 2s linear infinite;
+  opacity:0.8;
+}
+.marco{
+  position:absolute;
+  top:35%;
+  left:20%;
+  width:60%;
+  height:30%;
+  border:3px solid #22c55e;
+  border-radius:12px;
+  box-shadow: 0 0 10px #22c55e, inset 0 0 10px rgba(34,197,94,0.3);
+  pointer-events:none;
+}
+
+@keyframes scan{
+  0%{ top:0%; }
+  50%{ top:50%; }
+  100%{ top:100%; }
+}
+
+.laser{
+  display:none;
+}
+.laser.activo{
+  display:block;
+}
+
+/* Ajuste boton carrito solo movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    width:auto !important;
+    min-width:48px !important;
+    height:40px !important;
+    padding:6px 10px !important;
+    border-radius:12px !important;
+    font-size:18px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    z-index:900 !important;
+}
+
+/* contador compacto */
+#toggleCarritoBtn .cart-count,
+.cart-count,
+#cartCount,
+.contador-carrito{
+    font-size:11px !important;
+    min-width:16px !important;
+    height:16px !important;
+    line-height:16px !important;
+    border-radius:8px !important;
+    padding:0 3px !important;
+}
+
+/* cuando el carrito esta abierto no debe tapar el panel */
+.carrito.abierto ~ #toggleCarritoBtn,
+body:has(.carrito.abierto) #toggleCarritoBtn{
+    opacity:0.7;
+}
+
+}
+
+
+/* Boton carrito siempre accesible cuando el panel esta abierto */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:16px !important;
+    bottom:75px !important;
+    z-index:9999 !important;
+}
+
+.carrito{
+    z-index:5000 !important;
+}
+
+/* mantener el boton por encima del panel */
+body.carrito-abierto #toggleCarritoBtn{
+    display:flex !important;
+    opacity:1 !important;
+}
+
+}
+
+
+/* Carrito movil: panel por encima del boton sin transparencia */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    z-index:1000 !important;
+}
+
+/* Panel del carrito tapa el boton cuando esta abierto */
+.carrito.abierto,
+.carrito.active,
+.carrito{
+    z-index:9999 !important;
+}
+
+/* Sin cambios de opacidad */
+body.carrito-abierto #toggleCarritoBtn{
+    opacity:1 !important;
+}
+
+}
+
+
+/* Reubicacion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    top:18px !important;
+    right:14px !important;
+    bottom:auto !important;
+    z-index:3000 !important;
+}
+
+/* Mantener el carrito desplegado encima sin tapar el boton */
+.carrito,
+.carrito.abierto,
+.carrito.active{
+    z-index:9000 !important;
+}
+
+}
+
+
+/* Posicion final boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:12px !important;
+    bottom:90px !important;
+    top:auto !important;
+    z-index:3000 !important;
+}
+
+}
+
+
+/* Ajuste adicional posicion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:55px !important;
+}
+
+}
+
+
+/* Boton carrito mas abajo en movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:20px !important;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>📷 Escáner de productos</h2>
+
+<div id="scanner">
+  <div class="marco"></div> <!-- 🔥 NUEVO -->
+  <div class="laser"></div>
+</div>
+
+<div class="botones-principales">
+  <button onclick="iniciarScanner()">▶ Iniciar</button>
+  <button onclick="detenerScanner()">⛔ Detener</button>
+  <button onclick="volver()">⬅ Volver</button>
+</div>
+
+<div class="carrito-box">
+  <h3>🛒 Carrito</h3>
+  <ul id="lista"></ul>
+  <div id="lista-productos"></div>
+
+<!-- 👇 AQUÍ PEGAS -->
+<div class="acciones-carrito">
+
+  <button onclick="pagar()" class="btn-pagar">
+    🧾 Pagar
+  </button>
+</div>
+
+  <div class="resumen">
+    <div class="resumen-linea">
+      <span>Total de productos</span>
+      <strong id="totalProductos">0</strong>
+    </div>
+    <div class="resumen-linea resumen-total">
+      <span>Total a pagar</span>
+      <strong id="totalImporte">S/ 0.00</strong>
+    </div>
+  </div>
+</div>
+<div id="notificaciones"></div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const modo = params.get("modo");
+const productoId = params.get("productoId");
+
+let productos = [];
+let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+
+let ultimoCodigo = null;
+let ultimoTiempo = 0;
+const TIEMPO_BLOQUEO = 1500;
+
+let detectorActivo = false;
+let listenerRegistrado = false;
+
+async function cargarProductos(){
+  const snapshot = await firebase.firestore().collection("productos").get();
+  productos = [];
+  snapshot.forEach(doc => productos.push({ ...doc.data(), id: doc.id }));
+}
+
+function formatearPrecio(valor){
+  const numero = Number(valor) || 0;
+  return `S/ ${numero.toFixed(2)}`;
+}
+
+function actualizarResumen(){
+  const totalProductos = carrito.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0);
+  const totalImporte = carrito.reduce((acc, item) => acc + ((Number(item.p) || 0) * (Number(item.cantidad) || 0)), 0);
+
+  document.getElementById("totalProductos").textContent = totalProductos;
+  document.getElementById("totalImporte").textContent = formatearPrecio(totalImporte);
+}
+
+function renderCarrito(){
+  const ul = document.getElementById("lista");
+  ul.innerHTML = "";
+
+  if(!carrito.length){
+    ul.innerHTML = '<li class="vacio">No hay productos en el carrito.</li>';
+    actualizarResumen();
+    return;
+  }
+
+  carrito.forEach((p, index) => {
+    const precio = Number(p.p) || 0;
+    const cantidad = Number(p.cantidad) || 0;
+    const subtotal = precio * cantidad;
+
+    ul.innerHTML += `
+      <li class="item-carrito">
+        <div class="item-info">
+          <div class="item-nombre">${p.n || 'Producto'}</div>
+          <div class="item-detalles">
+            Código: <strong>${p.codigo || '-'}</strong><br>
+            Precio unitario: <strong>${formatearPrecio(precio)}</strong><br>
+            <span class="item-subtotal">Subtotal: ${formatearPrecio(subtotal)}</span>
+            ${(p.descuentoValor>0) ? `<br><button class="btn-desc-icon" title="${p.descuentoAplicado ? "Quitar descuento" : "Aplicar descuento"}" onclick="toggleDescuentoCarrito(${index})">${p.descuentoAplicado ? "❌" : "🎁"}</button>` : ""}
+          </div>
+        </div>
+
+        <div class="item-acciones">
+          <button class="btn-cantidad" onclick="disminuirCantidad(${index})">−</button>
+          <span class="cantidad-badge">${cantidad}</span>
+          <button class="btn-cantidad" onclick="aumentarCantidad(${index})">+</button>
+          <button class="btn-eliminar" onclick="eliminarItem(${index})">Eliminar</button>
+        </div>
+      </li>
+    `;
+  });
+
+  actualizarResumen();
+}
+
+function guardarCarrito(){
+  localStorage.setItem("carrito", JSON.stringify(carrito));
+}
+
+function guardarYRenderizar(){
+  guardarCarrito();
+  renderCarrito();
+}
+
+function agregarCarrito(prod){
+  const nombre = prod.n || prod.nombre || "Producto";
+  const precio = Number(prod.p || prod.precio || 0);
+  const codigo = String(prod.codigo || "").trim();
+
+  let item = carrito.find(x => String(x.codigo).trim() === codigo);
+  if(item) {
+    item.cantidad = (Number(item.cantidad) || 0) + 1;
+  } else {
+    carrito.push({
+      codigo,
+      n: nombre,
+      p: precio,
+      precioOriginal: Number(prod.precio || precio),
+      descuentoActivo: prod.descuentoActivo || false,
+      descuentoTipo: prod.descuentoTipo || "porcentaje",
+      descuentoValor: Number(prod.descuentoValor)||0,
+      descuentoAplicado:false,
+      cantidad: 1
+    });
+  }
+
+  guardarYRenderizar();
+}
+
+function calcularPrecioDescuentoItem(i){
+  let base=Number(i.precioOriginal||i.p)||0;
+  if(i.descuentoTipo==="monto") return Math.max(0, base-Number(i.descuentoValor||0));
+  return base-(base*Number(i.descuentoValor||0)/100);
+}
+
+function toggleDescuentoCarrito(index){
+  let i=carrito[index];
+  if(!i || Number(i.descuentoValor)<=0) return;
+  i.descuentoAplicado=!i.descuentoAplicado;
+  i.p=i.descuentoAplicado ? calcularPrecioDescuentoItem(i) : Number(i.precioOriginal||i.p);
+  guardarYRenderizar();
+}
+
+function aumentarCantidad(index){
+  if(!carrito[index]) return;
+  carrito[index].cantidad = (Number(carrito[index].cantidad) || 0) + 1;
+  guardarYRenderizar();
+}
+
+function disminuirCantidad(index){
+  if(!carrito[index]) return;
+  carrito[index].cantidad = (Number(carrito[index].cantidad) || 0) - 1;
+
+  if(carrito[index].cantidad <= 0){
+    carrito.splice(index, 1);
+  }
+
+  guardarYRenderizar();
+}
+
+function eliminarItem(index){
+  if(!carrito[index]) return;
+  carrito.splice(index, 1);
+  guardarYRenderizar();
+}
+
+function mostrarNotificacion(mensaje, tipo = "ok"){
+  const div = document.createElement("div");
+  div.className = `notificacion ${tipo}`;
+  div.innerHTML = mensaje;
+  document.getElementById("notificaciones").appendChild(div);
+  setTimeout(() => div.remove(), 2000);
+}
+
+
+let audioContext = null;
+
+function inicializarAudio(){
+  try{
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx) return null;
+
+    if(!audioContext){
+      audioContext = new AudioCtx();
+    }
+
+    if(audioContext.state === "suspended"){
+      audioContext.resume();
+    }
+
+    return audioContext;
+  }catch(err){
+    console.warn("No se pudo inicializar el audio:", err);
+    return null;
+  }
+}
+
+function reproducirBeep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    // 🔊 volumen general
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0.18; // volumen suave
+
+    // 🔊 PRIMER TONO (agudo tipo láser)
+    const osc1 = ctx.createOscillator();
+    osc1.type = "square"; // más agresivo que sine
+    osc1.frequency.setValueAtTime(1400, ctx.currentTime);
+
+    // 🔊 SEGUNDO TONO (baja rápido como POS)
+    const osc2 = ctx.createOscillator();
+    osc2.type = "square";
+    osc2.frequency.setValueAtTime(900, ctx.currentTime + 0.08);
+
+    // conectar
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(ctx.destination);
+
+    // reproducir
+    osc1.start();
+    osc1.stop(ctx.currentTime + 0.08);
+
+    osc2.start(ctx.currentTime + 0.08);
+    osc2.stop(ctx.currentTime + 0.16);
+
+  }catch(e){
+    console.log("Error sonido:", e);
+  }
+}
+function iniciarScanner(){
+  document.querySelector(".laser").classList.add("activo");
+  inicializarAudio();
+  reproducirBeep();
+
+  if(detectorActivo){
+    Quagga.start();
+    return;
+  }
+
+  Quagga.init({
+  inputStream: {
+    type: "LiveStream",
+    target: document.querySelector("#scanner"),
+    constraints: {
+      facingMode: "environment",
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      focusMode: "continuous"
+    },
+    area: {
+  top: "35%",
+  right: "20%",
+  left: "20%",
+  bottom: "35%"
+}
+  },
+ locator: {
+  patchSize: "medium", // o "large"
+  halfSample: true
+},
+  numOfWorkers: navigator.hardwareConcurrency || 4,
+  frequency: 5,
+  decoder: {
+    readers: [
+      "ean_reader",
+      "ean_8_reader",
+      "code_128_reader",
+      "upc_reader",
+      "upc_e_reader"
+    ],
+    multiple: false
+  },
+  locate: true
+}, err => {
+  if(err){
+    console.error("ERROR REAL:", err);
+    alert("No se pudo activar la cámara");
+    return;
+  }
+
+  console.log("Cámara iniciada ✅");
+  Quagga.start();
+  detectorActivo = true;
+});
+
+  if(!listenerRegistrado){
+    Quagga.onDetected(data => {
+      const codigo = data.codeResult.code;
+
+      if (data.codeResult.decodedCodes) {
+  const errores = data.codeResult.decodedCodes.filter(x => x.error > 0.2);
+  if (errores.length > 0) return;
+}
+
+      console.log("Código detectado:", codigo);
+      const ahora = Date.now();
+
+      if(modo === "admin" && productoId){
+        reproducirBeep();
+
+        window.opener?.postMessage({
+          type: "scanner-codigo",
+          codigo,
+          productoId
+        }, "*");
+
+        setTimeout(() => {
+          window.close();
+        }, 300);
+
+        return;
+      }
+
+      if(codigo === ultimoCodigo && (ahora - ultimoTiempo < TIEMPO_BLOQUEO)){
+        return;
+      }
+
+      ultimoCodigo = codigo;
+      ultimoTiempo = ahora;
+      
+const codigoEscaneado = String(codigo).trim();
+
+const prod = productos.find(p => {
+  const codigoBD = String(p.codigo).trim();
+  return codigoBD === codigoEscaneado;
+});
+
+      reproducirBeep();
+
+      if(prod){
+        agregarCarrito(prod);
+        mostrarNotificacion(`✅ ${prod.n || prod.nombre || 'Producto'} - ${formatearPrecio(prod.p || prod.precio || 0)}`, "ok");
+      } else {
+        mostrarNotificacion(`❌ Código no registrado: ${codigo}`, "error");
+      }
+    });
+
+    listenerRegistrado = true;
+  }
+}
+
+function detenerScanner(){
+  document.querySelector(".laser").classList.remove("activo");
+  Quagga.stop();
+  ultimoCodigo = null;
+}
+
+function volver(){
+  detenerScanner();
+  if(window.opener && !window.opener.closed){
+    window.close();
+  } else {
+    window.location.href = "index.html";
+  }
+}
+
+window.aumentarCantidad = aumentarCantidad;
+window.disminuirCantidad = disminuirCantidad;
+window.eliminarItem = eliminarItem;
+
+window.onload = function(){
+  renderCarrito();
+  cargarProductos();
+};
+
+
+function pagar() {
+  if (carrito.length === 0) {
+    alert("No hay productos en el carrito");
+    return;
+  }
+
+  localStorage.setItem("carrito", JSON.stringify(carrito));
+
+  if(window.opener && !window.opener.closed){
+    window.opener.location.href = "boletas.html";
+    window.close();
+  } else {
+    window.location.href = "boletas.html";
+  }
+}
+</script>
+
+</body>
+</html>

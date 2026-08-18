@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>JH-MAKER POS</title>
+<meta http-equiv="refresh" content="0; url=index.html">
+<style>body{font-family:Arial;background:#07111f;color:#fff;text-align:center;padding:40px}a{color:#60a5fa}
+/* Ajuste boton carrito solo movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    width:auto !important;
+    min-width:48px !important;
+    height:40px !important;
+    padding:6px 10px !important;
+    border-radius:12px !important;
+    font-size:18px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    z-index:900 !important;
+}
+
+/* contador compacto */
+#toggleCarritoBtn .cart-count,
+.cart-count,
+#cartCount,
+.contador-carrito{
+    font-size:11px !important;
+    min-width:16px !important;
+    height:16px !important;
+    line-height:16px !important;
+    border-radius:8px !important;
+    padding:0 3px !important;
+}
+
+/* cuando el carrito esta abierto no debe tapar el panel */
+.carrito.abierto ~ #toggleCarritoBtn,
+body:has(.carrito.abierto) #toggleCarritoBtn{
+    opacity:0.7;
+}
+
+}
+
+
+/* Boton carrito siempre accesible cuando el panel esta abierto */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:16px !important;
+    bottom:75px !important;
+    z-index:9999 !important;
+}
+
+.carrito{
+    z-index:5000 !important;
+}
+
+/* mantener el boton por encima del panel */
+body.carrito-abierto #toggleCarritoBtn{
+    display:flex !important;
+    opacity:1 !important;
+}
+
+}
+
+
+/* Carrito movil: panel por encima del boton sin transparencia */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    z-index:1000 !important;
+}
+
+/* Panel del carrito tapa el boton cuando esta abierto */
+.carrito.abierto,
+.carrito.active,
+.carrito{
+    z-index:9999 !important;
+}
+
+/* Sin cambios de opacidad */
+body.carrito-abierto #toggleCarritoBtn{
+    opacity:1 !important;
+}
+
+}
+
+
+/* Reubicacion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    top:18px !important;
+    right:14px !important;
+    bottom:auto !important;
+    z-index:3000 !important;
+}
+
+/* Mantener el carrito desplegado encima sin tapar el boton */
+.carrito,
+.carrito.abierto,
+.carrito.active{
+    z-index:9000 !important;
+}
+
+}
+
+
+/* Posicion final boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:12px !important;
+    bottom:90px !important;
+    top:auto !important;
+    z-index:3000 !important;
+}
+
+}
+
+
+/* Ajuste adicional posicion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:55px !important;
+}
+
+}
+
+
+/* Boton carrito mas abajo en movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:20px !important;
+}
+
+}
+
+</style>
+</head>
+<body>
+<p>La vista individual de producto fue integrada al punto de venta.</p>
+<p><a href="index.html">Ir al punto de venta</a></p>
+<script>location.replace('index.html');</script>
+</body>
+</html>

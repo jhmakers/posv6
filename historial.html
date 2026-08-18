@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Historial</title>
+
+<style>
+*{
+  box-sizing: border-box;
+  margin:0;
+  padding:0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body{
+  background: linear-gradient(135deg,#0f172a,#020617);
+  color:#fff;
+  padding:15px;
+}
+
+/* CONTENEDOR */
+.container{
+  max-width:900px;
+  margin:auto;
+}
+
+/* TITULO */
+h2{
+  text-align:center;
+  margin-bottom:20px;
+  font-size:22px;
+}
+
+/* BUSCADOR */
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  outline:none;
+  margin-bottom:15px;
+  font-size:14px;
+}
+
+/* TARJETAS */
+.box{
+  background: rgba(30,41,59,0.8);
+  backdrop-filter: blur(10px);
+  padding:15px;
+  margin-bottom:12px;
+  border-radius:12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  transition: 0.2s;
+}
+
+.box:hover{
+  transform: scale(1.02);
+}
+
+/* HEADER BOLETA */
+.boleta-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+/* ESTADO */
+.estado{
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.activo{
+  background:#16a34a;
+}
+
+.anulado{
+  background:#dc2626;
+}
+
+/* BOTONES */
+button{
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:13px;
+  margin-right:5px;
+}
+
+.btn-ver{ background:#2563eb; color:#fff; }
+.btn-anular{ background:#ef4444; color:#fff; }
+
+/* VISOR */
+#visorBoleta{
+  background: transparent;
+  padding:0;
+}
+
+/* RESPONSIVE */
+@media (max-width:600px){
+  h2{ font-size:18px; }
+  .box{ padding:12px; }
+}
+
+/* MODAL FONDO */
+.modal{
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.7);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+/* CONTENIDO MODAL */
+.modal-content{
+  background:#fff;
+  color:#000;
+  max-width:500px;
+  width:95%;
+  max-height:90vh;
+  overflow:auto;
+  border-radius:12px;
+  padding:15px;
+  animation: aparecer 0.2s ease;
+}
+
+/* ANIMACIÓN */
+@keyframes aparecer{
+  from{ transform: scale(0.8); opacity:0; }
+  to{ transform: scale(1); opacity:1; }
+}
+
+
+body{
+  background: linear-gradient(135deg,#0f172a,#020617);
+  color:#fff;
+  padding:10px;
+  font-size:16px; /* 👈 importante */
+}
+
+
+@media (max-width:600px){
+
+  input{
+    font-size:16px; /* evita zoom automático en Android */
+  }
+
+  button{
+    font-size:14px;
+    padding:10px;
+  }
+
+  .boleta-top{
+    flex-direction:column;
+    align-items:flex-start;
+    gap:5px;
+  }
+
+}
+
+
+
+#visorBoleta div{
+  width:100% !important;
+  max-width:400px;
+}
+
+
+#boletaPDF{
+  width: 260px !important;   /* 👈 más angosta */
+  background:#fefefe !important;
+}
+
+
+.isla{
+  background: linear-gradient(135deg, #1e3a8a, #1e293b);
+  padding:8px;
+  border-radius:12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+#boletaPDF{
+  display:block;
+  margin:auto;
+}
+
+
+/* Ajuste boton carrito solo movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    width:auto !important;
+    min-width:48px !important;
+    height:40px !important;
+    padding:6px 10px !important;
+    border-radius:12px !important;
+    font-size:18px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    z-index:900 !important;
+}
+
+/* contador compacto */
+#toggleCarritoBtn .cart-count,
+.cart-count,
+#cartCount,
+.contador-carrito{
+    font-size:11px !important;
+    min-width:16px !important;
+    height:16px !important;
+    line-height:16px !important;
+    border-radius:8px !important;
+    padding:0 3px !important;
+}
+
+/* cuando el carrito esta abierto no debe tapar el panel */
+.carrito.abierto ~ #toggleCarritoBtn,
+body:has(.carrito.abierto) #toggleCarritoBtn{
+    opacity:0.7;
+}
+
+}
+
+
+/* Boton carrito siempre accesible cuando el panel esta abierto */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:16px !important;
+    bottom:75px !important;
+    z-index:9999 !important;
+}
+
+.carrito{
+    z-index:5000 !important;
+}
+
+/* mantener el boton por encima del panel */
+body.carrito-abierto #toggleCarritoBtn{
+    display:flex !important;
+    opacity:1 !important;
+}
+
+}
+
+
+/* Carrito movil: panel por encima del boton sin transparencia */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    z-index:1000 !important;
+}
+
+/* Panel del carrito tapa el boton cuando esta abierto */
+.carrito.abierto,
+.carrito.active,
+.carrito{
+    z-index:9999 !important;
+}
+
+/* Sin cambios de opacidad */
+body.carrito-abierto #toggleCarritoBtn{
+    opacity:1 !important;
+}
+
+}
+
+
+/* Reubicacion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    top:18px !important;
+    right:14px !important;
+    bottom:auto !important;
+    z-index:3000 !important;
+}
+
+/* Mantener el carrito desplegado encima sin tapar el boton */
+.carrito,
+.carrito.abierto,
+.carrito.active{
+    z-index:9000 !important;
+}
+
+}
+
+
+/* Posicion final boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    position:fixed !important;
+    right:12px !important;
+    bottom:90px !important;
+    top:auto !important;
+    z-index:3000 !important;
+}
+
+}
+
+
+/* Ajuste adicional posicion boton carrito movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:55px !important;
+}
+
+}
+
+
+/* Boton carrito mas abajo en movil */
+@media(max-width:768px){
+
+#toggleCarritoBtn{
+    bottom:20px !important;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:15px;">
+    <button onclick="location.href='index.html'" style="background:#16a34a;color:#fff;">⬅ POS</button>
+    <h2 style="margin:0;flex:1;">📊 Historial de Boletas</h2>
+  </div>
+
+
+<input id="buscar" placeholder="Buscar por nombre o número" oninput="filtrar()">
+
+<div id="lista"></div>
+
+
+<div id="modal" class="modal" style="display:none;">
+  <div class="modal-content">
+
+    <div style="display:flex; justify-content:center; padding:10px;">
+  <div id="visorBoleta" class="isla"></div>
+</div>
+
+    <div style="margin-top:10px; text-align:center;">
+      <button onclick="descargarImagen()">🖼️ Imagen</button>
+      <button onclick="descargarPDF()">📄 PDF</button>
+      <button onclick="cerrarVisor()">❌ Cerrar</button>
+    </div>
+
+  </div>
+</div>
+ 
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDYjGgEc599if7hQG7Qd2wF7-vlSynBDNU",
+  authDomain: "jhmaker-6b092.firebaseapp.com",
+  projectId: "jhmaker-6b092",
+  storageBucket: "jhmaker-6b092.firebasestorage.app",
+  messagingSenderId: "231063273884",
+  appId: "1:231063273884:web:e163c609fbdefe46ff8859"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let todas = [];
+
+async function cargar(){
+  const snap = await db.collection("boletas").orderBy("timestamp","desc").get();
+
+  todas = snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
+  render(todas);
+}
+
+function render(data){
+  const cont = document.getElementById("lista");
+
+  cont.innerHTML = data.map(b => `
+    <div class="box">
+
+      <div class="boleta-top">
+        <div>
+          <b>${b.numero}</b><br>
+          <small>${b.cliente}</small>
+        </div>
+
+        <div class="estado ${b.estado === 'anulado' ? 'anulado' : 'activo'}">
+          ${b.estado}
+        </div>
+      </div>
+
+      <div style="margin:10px 0;">
+        💰 Total: <b>S/. ${(Number(b.total)||0).toFixed(2)}</b>
+      </div>
+
+      <div>
+        <button class="btn-ver" onclick="ver('${b.id}')">👁 Ver</button>
+        <button class="btn-anular" onclick="anular('${b.id}')"
+          ${b.estado === 'anulado' ? 'disabled' : ''}>
+          ❌ Anular
+        </button>
+      </div>
+
+    </div>
+  `).join("");
+}
+
+function filtrar(){
+  const val = document.getElementById("buscar").value.toLowerCase();
+
+  const filtradas = todas.filter(b =>
+    String(b.cliente || '').toLowerCase().includes(val) ||
+    String(b.numero || '').toLowerCase().includes(val)
+  );
+
+  render(filtradas);
+}
+
+
+async function anular(id){
+  if(confirm("¿Anular boleta?")){
+    await db.collection("boletas").doc(id).update({
+      estado: "anulado"
+    });
+    cargar();
+  }
+}
+
+cargar();
+
+function ver(id){
+  const b = todas.find(x => x.id === id);
+
+  if(!b || !b.html){
+    alert("No hay boleta guardada");
+    return;
+  }
+
+  const visor = document.getElementById("visorBoleta");
+  visor.innerHTML = b.html;
+
+  // 🔥 FORZAR ESTILO DESPUÉS DE INSERTAR
+  const boleta = document.querySelector("#boletaPDF");
+
+  if(boleta){
+    boleta.style.width = "260px";
+    boleta.style.maxWidth = "260px";
+  }
+
+  document.getElementById("modal").style.display = "flex";
+}
+
+function descargarImagen(){
+  const boleta = document.querySelector("#boletaPDF");
+
+  if(!boleta){
+    alert("No se encontró la boleta");
+    return;
+  }
+
+  html2canvas(boleta, {
+    scale: 3, // 🔥 más calidad
+    backgroundColor: "#ffffff"
+  }).then(canvas => {
+    const link = document.createElement("a");
+    link.download = "boleta.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+}
+function descargarPDF(){
+  const { jsPDF } = window.jspdf;
+  const boleta = document.querySelector("#boletaPDF");
+
+  if(!boleta){
+    alert("No se encontró la boleta");
+    return;
+  }
+
+  html2canvas(boleta, {
+    scale: 2
+  }).then(canvas => {
+
+    const imgData = canvas.toDataURL("image/png");
+
+    // 🔥 ancho tipo ticket (80mm)
+    const imgWidth = 80;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+    // 🔥 PDF del tamaño EXACTO de la boleta
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: [imgWidth, imgHeight] // 👈 clave
+    });
+
+    pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+    pdf.save("boleta.pdf");
+  });
+}
+function cerrarVisor(){
+  document.getElementById("modal").style.display = "none";
+}
+
+</script>
+
+
+</div>
+</body>
+</html>
